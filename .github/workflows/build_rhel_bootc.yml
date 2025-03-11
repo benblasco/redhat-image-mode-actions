@@ -56,6 +56,13 @@ jobs:
           username: ${{ secrets.RHT_REG_SVCUSER }}
           password: ${{ secrets.RHT_REG_SVCPASS }}
           auth_file_path: /run/containers/0/auth.json
+      
+      - name: Write the ORG ID and Activation Key to a file for the build
+        run: |
+          cat <<EOF > files/.rhc_connect_credentials
+          RHC_ACT_KEY=${{ secrets.RHT_ACT_KEY }}
+          RHC_ORG_ID=${{ secrets.RHT_ORGID }}
+          EOF
 
       - name: Use buildah bud to create the image
         id: build-image

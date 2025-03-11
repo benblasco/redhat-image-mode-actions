@@ -8,4 +8,11 @@ RUN dnf -y install httpd && \
     mv /var/www /usr/share/www && \
     sed -ie 's,/var/www,/usr/share/www,' /etc/httpd/conf/httpd.conf
 RUN echo "Welcome to the bootc-http instance!" > /usr/share/www/html/index.html
+
+# Register system at first boot, as per:
+# https://gitlab.com/fedora/bootc/examples/-/blob/main/insights/Containerfile?ref_type=heads
+COPY files/rhc-connect.service /usr/lib/systemd/system/rhc-connect.service
+COPY files/.rhc_connect_credentials /etc/rhc/.rhc_connect_credentials
+RUN systemctl enable rhc-connect && touch /etc/rhc/.run_rhc_connect_next_boot
+
 EXPOSE 80
