@@ -12,7 +12,7 @@ RUN dnf -y install rhc cloud-init && \
     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
     dnf clean all
     
-RUN echo "Welcome to the Coles demo bootc-http instance!" > /usr/share/www/html/index.html
+RUN echo "Welcome to the mind-blowing Coles demo bootc-http instance!" > /usr/share/www/html/index.html
 
 # Register system at first boot, as per:
 # https://gitlab.com/fedora/bootc/examples/-/blob/main/insights/Containerfile?ref_type=heads
