@@ -1,4 +1,4 @@
-FROM registry.redhat.io/rhel9/rhel-bootc:9.5
+FROM registry.redhat.io/rhel9/rhel-bootc:9.5-1739420021
 RUN dnf -y update && dnf -y install tmux mkpasswd vim git tree
 RUN pass=$(mkpasswd --method=SHA-512 --rounds=4096 redhat) && useradd -m -G wheel bootc-user -p $pass
 RUN echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/wheel-sudo
@@ -11,7 +11,7 @@ RUN dnf -y install rhc cloud-init && \
     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
     dnf clean all
 
-RUN dnf -y upgrade --cve=CVE-2025-0624
+#RUN dnf -y upgrade --cve=CVE-2025-0624
     
 RUN echo "Welcome to the mind-blowing ANZ demo bootc-http instance!" > /usr/share/www/html/index.html
 
