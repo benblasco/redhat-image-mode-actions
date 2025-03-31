@@ -1,4 +1,4 @@
-FROM registry.redhat.io/rhel9/rhel-bootc:9.5-1739775809
+FROM registry.redhat.io/rhel9/rhel-bootc:9.5-1742917433
 #RUN dnf -y update && dnf -y install tmux mkpasswd vim git tree
 RUN dnf -y install tmux mkpasswd vim git tree
 RUN pass=$(mkpasswd --method=SHA-512 --rounds=4096 redhat) && useradd -m -G wheel bootc-user -p $pass
