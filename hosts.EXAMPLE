@@ -1,0 +1,2 @@
+[build_hosts]
+buildhost.example.com ansible_host=192.168.1.148

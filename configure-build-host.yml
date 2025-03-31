@@ -1,0 +1,69 @@
+---
+- name: Prepare system to build bootc images
+
+  hosts: all
+
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - vars/rhn_credential.yml
+    - vars/ssg_versions.yml
+
+  tasks:
+    - name: Install container tools
+      ansible.builtin.dnf:
+        name:
+          - container-tools
+          - git
+        state: present
+
+    - name: Log in to podman registry
+      containers.podman.podman_login:
+        registry: registry.redhat.io
+        username: "{{ rhn_username }}"
+        password: "{{ rhn_password }}"
+
+    - name: Pull the bootc image builder image
+      containers.podman.podman_image:
+        name: registry.redhat.io/rhel9/bootc-image-builder
+        tag: latest
+        state: present
+
+    - name: Pull this image mode actions repo to the build host
+      ansible.builtin.git:
+        repo: 'https://github.com/benblasco/redhat-image-mode-actions'
+        dest: /root/redhat-image-mode-actions
+        update: yes
+
+    - name: Create the output directory for the image
+      ansible.builtin.file:
+        name: /root/output
+        state: directory
+
+# podman run \
+#    --rm \
+#    -it \
+#    --privileged \
+#    --pull=newer \
+#    --security-opt label=type:unconfined_t \
+#    -v $(pwd)/config.toml:/config.toml:ro \
+#    -v $(pwd)/output:/output \
+#    -v /var/lib/containers/storage:/var/lib/containers/storage \
+#    registry.redhat.io/rhel9/bootc-image-builder:latest \
+#    --local \
+#    --type qcow2 \
+#    ghcr.io/benblasco/redhat-image-mode-actions:latest
+#
+# podman run \
+#    --rm \
+#    -it \
+#    --privileged \
+#    --pull=newer \
+#    --security-opt label=type:unconfined_t \
+#    -v $(pwd)/output:/output \
+#    -v /var/lib/containers/storage:/var/lib/containers/storage \
+#    registry.redhat.io/rhel9/bootc-image-builder:latest \
+#    --local \
+#    --type qcow2 \
+#    ghcr.io/benblasco/redhat-image-mode-actions:latest

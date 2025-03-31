@@ -1,0 +1,3 @@
+secret.txt
+hosts
+group_vars/all/registry_credential.yml
