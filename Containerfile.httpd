@@ -12,7 +12,7 @@ RUN dnf -y install rhc cloud-init && \
     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
     dnf clean all
 
-RUN dnf -y upgrade --cve="CVE-2025-21785,CVE-2025-22869" 
+# RUN dnf -y upgrade --cve="CVE-2025-21785,CVE-2025-22869" 
     
 RUN echo "Welcome to the mind-blowing ANZ demo bootc-http instance!" > /usr/share/www/html/index.html
 
@@ -21,5 +21,8 @@ RUN echo "Welcome to the mind-blowing ANZ demo bootc-http instance!" > /usr/shar
 COPY files/rhc-connect.service /usr/lib/systemd/system/rhc-connect.service
 COPY files/.rhc_connect_credentials /etc/rhc/.rhc_connect_credentials
 RUN systemctl enable rhc-connect && touch /etc/rhc/.run_rhc_connect_next_boot
+
+# Override the Insights Client timer so that it runs immediately after booting too
+COPY files/insights-client.timer.d/override.conf /etc/systemd/system/insights-client.timer.d/override.conf
 
 EXPOSE 80
