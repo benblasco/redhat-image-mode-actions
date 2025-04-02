@@ -12,7 +12,7 @@ RUN dnf -y install rhc cloud-init && \
     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
     dnf clean all
 
-RUN dnf -y upgrade --cves="CVE-2025-22869" 
+RUN dnf -y upgrade --cve="CVE-2025-22869" 
     
 RUN echo "Welcome to the mind-blowing ANZ demo bootc-http instance!" > /usr/share/www/html/index.html
 
