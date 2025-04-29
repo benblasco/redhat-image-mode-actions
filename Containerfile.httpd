@@ -14,7 +14,7 @@ RUN dnf -y install rhc cloud-init && \
 
 RUN dnf -y upgrade --cve="CVE-2025-22869" 
     
-RUN echo "Welcome to the mind-blowing ANZ demo bootc-http instance!" > /usr/share/www/html/index.html
+RUN echo "Welcome to the mind-blowing demo bootc-http instance!" > /usr/share/www/html/index.html
 
 # Register system at first boot, as per:
 # https://gitlab.com/fedora/bootc/examples/-/blob/main/insights/Containerfile?ref_type=heads
