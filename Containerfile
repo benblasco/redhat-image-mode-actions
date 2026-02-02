@@ -1,5 +1,3 @@
-MAINTAINER Alessandro Rossi <al.rossi87@gmail.com>
-
 FROM registry.redhat.io/rhel9/rhel-bootc:9.6
 
 #install software
