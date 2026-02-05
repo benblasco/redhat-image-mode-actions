@@ -1,0 +1,34 @@
+# https://osbuild.org/docs/user-guide/blueprint-reference/#disk
+# https://osbuild.org/docs/user-guide/partitioning/
+[[customizations.disk.partitions]]
+type = "lvm"
+name = "rhelvg"
+minsize = "20 GiB"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "rootlv"
+mountpoint = "/"
+label = "root"
+fs_type = "xfs"
+minsize = "10 GiB"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "homelv"
+mountpoint = "/var/home"
+label = "home"
+fs_type = "xfs"
+minsize = "5 GiB"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "varloglv"
+mountpoint = "/var/log"
+label = "varlog"
+fs_type = "xfs"
+minsize = "5 GiB"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "varlv"
+mountpoint = "/var"
+#label = "var"
+fs_type = "xfs"
+minsize = "5 GiB"
