@@ -50,7 +50,7 @@ jobs:
 
       - name: Build ISO
         id: build-iso
-        uses: osbuild/bootc-image-builder-action@vX.Y.Z
+        uses: osbuild/bootc-image-builder-action@v0.0.2
         with:
           config-file: ./config.toml
           image: ghcr.io/benblasco/redhat-image-mode-actions:main
