@@ -23,27 +23,10 @@ jobs:
       # SOURCE_REGISTRY_USER: "${{ secrets.SOURCE_REGISTRY_USER }}"
       # SOURCE_REGISTRY_PASSWORD: "${{ secrets.SOURCE_REGISTRY_PASSWORD }}"
 
-      # Containerfile to build
-      CONTAINERFILE: Containerfile
-
-      # Destination image namespace and name (eg: myrepo/myimage)
-      DEST_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
-
-      # List of tags to publish
-      TAGLIST: latest ${{ github.sha }} ${{ github.ref_name }}
-
-      # Destination registry for built images
-      DEST_REGISTRY_HOST: "ghcr.io"
-      # Destination credentials - uses platform variables and secrets
-      # DEST_REGISTRY_USER: "${{ github.actor }}"
-      # DEST_REGISTRY_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
-
-#    container:
-#      image: registry.access.redhat.com/ubi9/ubi
-#      options: --privileged
-#    permissions:
-#      contents: write
-#      packages: write
+      # Source container image namespace and name (eg: myrepo/myimage)
+      SRC_CONTAINER_REGISTRY: "ghcr.io"
+      SRC_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
+      SRC_CONTAINER_IMAGE_TAG: "main"
 
     steps:
       - name: Clone the repository
@@ -54,14 +37,14 @@ jobs:
         uses: osbuild/bootc-image-builder-action@v0.0.2
         with:
           config-file: ./config.toml
-          image: ghcr.io/benblasco/redhat-image-mode-actions:main
+          image: "${{ SRC_CONTAINER_REGISTRY }}/${{ SRC_CONTAINER_IMAGE }}:${{ SRC_CONTAINER_IMAGE_TAG }}"
           types: |
             qcow2
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rhel.qcow2
+          name: rhel-images
           path: ${{ steps.build-qcow2.outputs.output-directory }}
           if-no-files-found: error
           compression-level: 0
