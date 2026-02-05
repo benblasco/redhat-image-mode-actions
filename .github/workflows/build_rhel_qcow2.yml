@@ -24,9 +24,9 @@ jobs:
       # SOURCE_REGISTRY_PASSWORD: "${{ secrets.SOURCE_REGISTRY_PASSWORD }}"
 
       # Source container image namespace and name (eg: myrepo/myimage)
-      SRC_CONTAINER_REGISTRY: "ghcr.io"
-      SRC_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
-      SRC_CONTAINER_IMAGE_TAG: "main"
+      SOURCE_CONTAINER_REGISTRY: "ghcr.io"
+      SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
+      SOURCE_CONTAINER_IMAGE_TAG: "main"
 
     steps:
       - name: Clone the repository
@@ -37,7 +37,7 @@ jobs:
         uses: osbuild/bootc-image-builder-action@v0.0.2
         with:
           config-file: ./config.toml
-          image: "${{ SRC_CONTAINER_REGISTRY }}/${{ SRC_CONTAINER_IMAGE }}:${{ SRC_CONTAINER_IMAGE_TAG }}"
+          image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
           types: |
             qcow2
 
