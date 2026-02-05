@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - '*'
+    branches:
+      - '**'
 jobs:
   rhel-bootc-qcow2-build:
     name: Build RHEL bootc qcow2 image with repo access
