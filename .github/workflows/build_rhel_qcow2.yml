@@ -49,8 +49,8 @@ jobs:
       - name: Clone the repository
         uses: actions/checkout@v4
 
-      - name: Build ISO
-        id: build-iso
+      - name: Build QCOW2 disk image
+        id: build-qcow2
         uses: osbuild/bootc-image-builder-action@v0.0.2
         with:
           config-file: ./config.toml
@@ -61,7 +61,9 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iso
-          path: ${{ steps.build-iso.outputs.output-directory }}
+          name: rhel.qcow2
+          path: ${{ steps.build-qcow2.outputs.output-directory }}
           if-no-files-found: error
+          compression-level: 0
+          overwrite: true
       
