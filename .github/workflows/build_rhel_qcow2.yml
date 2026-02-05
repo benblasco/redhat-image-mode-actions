@@ -4,10 +4,9 @@ on:
   push:
     tags:
       - '*'
-
 jobs:
-  rhel-bootc-image-build:
-    name: Build RHEL bootc image with repo access
+  rhel-bootc-qcow2-build:
+    name: Build RHEL bootc qcow2 image with repo access
     runs-on: ubuntu-latest
     env:
       # Disable Subscription Manager container passthrough
