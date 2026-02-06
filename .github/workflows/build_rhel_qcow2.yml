@@ -47,6 +47,14 @@ jobs:
       - name: Clone the repository
         uses: actions/checkout@v4
 
+      # workaround for https://github.com/redhat-actions/podman-login/issues/42 since the docker config from the host doesn't come up to the container
+      - name: Workaround open podman-login action issue
+        env:
+          auth: "{ \"auths\": {} }"
+        run: |
+          mkdir -p $HOME/.docker
+          echo $auth > $HOME/.docker/config.json
+
       - name: Build QCOW2 disk image
         id: build-qcow2
         uses: osbuild/bootc-image-builder-action@v0.0.2
@@ -65,13 +73,13 @@ jobs:
           compression-level: 0
           overwrite: true
           
-      - name: Use buildah bud to create the container disk image
-        id: build-container-disk-image
-        uses: redhat-actions/buildah-build@v2
-        with:
-          image: ${{ env.DEST_IMAGE }}
-          tags: ${{ env.TAGLIST }}
-          containerfiles: ${{ env.CONTAINERFILE }}
+#      - name: Use buildah bud to create the container disk image
+#        id: build-container-disk-image
+#        uses: redhat-actions/buildah-build@v2
+#        with:
+#          image: ${{ env.DEST_IMAGE }}
+#          tags: ${{ env.TAGLIST }}
+#          containerfiles: ${{ env.CONTAINERFILE }}
       
       - name: Log in to the GitHub Container registry
         uses: redhat-actions/podman-login@v1
