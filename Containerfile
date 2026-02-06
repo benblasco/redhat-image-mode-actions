@@ -26,7 +26,7 @@ EORUN
 
 # Harden the image using the ACSC Essential 8 profile
 # https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_image_mode_for_rhel_to_build_deploy_and_manage_operating_systems/security-hardening-and-compliance-of-bootable-images#building-hardened-bootable-images_security-hardening-and-compliance-of-bootable-images
-RUN oscap-im --profile e8 /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml
+RUN oscap-im --profile ism /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml
 
 #clean up caches in the image and lint the container
 RUN rm /var/{cache,lib}/dnf /var/lib/rhsm /var/cache/ldconfig -rf
