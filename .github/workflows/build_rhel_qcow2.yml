@@ -64,22 +64,22 @@ jobs:
           types: |
             qcow2
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rhel-images
-          path: ${{ steps.build-qcow2.outputs.output-directory }}
-          if-no-files-found: error
-          compression-level: 0
-          overwrite: true
-          
-#      - name: Use buildah bud to create the container disk image
-#        id: build-container-disk-image
-#        uses: redhat-actions/buildah-build@v2
+#      - name: Upload Artifact
+#        uses: actions/upload-artifact@v4
 #        with:
-#          image: ${{ env.DEST_IMAGE }}
-#          tags: ${{ env.TAGLIST }}
-#          containerfiles: ${{ env.CONTAINERFILE }}
+#          name: rhel-images
+#          path: ${{ steps.build-qcow2.outputs.output-directory }}
+#          if-no-files-found: error
+#          compression-level: 0
+#          overwrite: true
+          
+      - name: Use buildah bud to create the container disk image
+        id: build-container-disk-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.DEST_IMAGE }}
+          tags: ${{ env.TAGLIST }}
+          containerfiles: ${{ env.CONTAINERFILE }}
       
       - name: Log in to the GitHub Container registry
         uses: redhat-actions/podman-login@v1
