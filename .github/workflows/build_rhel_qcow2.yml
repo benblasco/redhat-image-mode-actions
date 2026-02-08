@@ -105,15 +105,9 @@ jobs:
           name: rhel-images
           path: output/
       
-      #- name: List the base directory contents
-        #run: ls -R ${{ github.workspace }}
-      
       - name: List the base directory contents
         run: pwd && ls -R
       
-      - name: List the base directory contents
-        run: ls -R __w/redhat-image-mode-actions/
-
       - name: Get container tools in UBI builder
         run: dnf -y install podman buildah skopeo
 
