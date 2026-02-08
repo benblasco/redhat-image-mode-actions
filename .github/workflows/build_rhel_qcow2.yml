@@ -42,7 +42,7 @@ jobs:
           types: |
             qcow2
 
-      - name: Upload Artifact
+      - name: Upload QCOW2 disk image as artifact
         uses: actions/upload-artifact@v4
         with:
           name: rhel-images
@@ -99,6 +99,12 @@ jobs:
       - name: Clone the repository
         uses: actions/checkout@v4
 
+      - name: Download QCOW2 disk image as artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: rhel-images
+          path: ${{ steps.build-qcow2.outputs.output-directory }}
+      
       - name: Get container tools in UBI builder
         run: dnf -y install podman buildah skopeo
 
