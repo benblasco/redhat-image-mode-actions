@@ -7,8 +7,53 @@ on:
     branches:
       - '**'
 jobs:
+
   rhel-bootc-qcow2-build:
-    name: Build RHEL bootc qcow2 image from container image
+    name: Build RHEL bootc qcow2 image with repo access
+    runs-on: ubuntu-latest
+    env:
+      # Disable Subscription Manager container passthrough
+      SMDEV_CONTAINER_OFF: 1
+      # Subscription Manager credentials - uses repository secrets
+      # RHT_ORGID: "${{ secrets.RHT_ORGID }}"
+      # RHT_ACT_KEY: "${{ secrets.RHT_ACT_KEY }}"
+      
+      # Source registry for base image
+      SOURCE_REGISTRY_HOST: "registry.redhat.io"
+      # Source credentials - uses repository secrets
+      # SOURCE_REGISTRY_USER: "${{ secrets.SOURCE_REGISTRY_USER }}"
+      # SOURCE_REGISTRY_PASSWORD: "${{ secrets.SOURCE_REGISTRY_PASSWORD }}"
+
+      # Source container image namespace and name (eg: myrepo/myimage)
+      SOURCE_CONTAINER_REGISTRY: "ghcr.io"
+      SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
+      SOURCE_CONTAINER_IMAGE_TAG: "main"
+
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - name: Build QCOW2 disk image
+        id: build-qcow2
+        uses: osbuild/bootc-image-builder-action@v0.0.2
+        with:
+          config-file: ./config.toml
+          image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
+          types: |
+            qcow2
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rhel-images
+          path: ${{ steps.build-qcow2.outputs.output-directory }}
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+      
+  push-container-disk:
+    needs: rhel-bootc-qcow2-build
+    name: Convert qcow2 disk to "container disk" and push to registry
     runs-on: ubuntu-latest
     env:
       # Disable Subscription Manager container passthrough
@@ -65,24 +110,6 @@ jobs:
           mkdir -p $HOME/.docker
           echo $auth > $HOME/.docker/config.json
 
-      - name: Build QCOW2 disk image
-        id: build-qcow2
-        uses: osbuild/bootc-image-builder-action@v0.0.2
-        with:
-          config-file: ./config.toml
-          image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
-          types: |
-            qcow2
-
-#      - name: Upload Artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: rhel-images
-#          path: ${{ steps.build-qcow2.outputs.output-directory }}
-#          if-no-files-found: error
-#          compression-level: 0
-#          overwrite: true
-          
       - name: Use buildah bud to create the container disk image
         id: build-container-disk-image
         uses: redhat-actions/buildah-build@v2
