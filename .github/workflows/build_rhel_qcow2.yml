@@ -46,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rhel-images
-          path: ${{ steps.build-qcow2.outputs.output-directory }}
+          path: ${{ steps.build-qcow2.outputs.output-directory }}/qcow2/disk.qcow2
           if-no-files-found: error
           compression-level: 0
           overwrite: true
@@ -103,7 +103,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: rhel-images
-          path: ${{ steps.build-qcow2.outputs.output-directory }}
+          path: output/
       
       - name: Get container tools in UBI builder
         run: dnf -y install podman buildah skopeo
