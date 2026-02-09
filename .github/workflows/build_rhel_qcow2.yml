@@ -12,18 +12,6 @@ jobs:
     name: Build RHEL bootc qcow2 image with repo access
     runs-on: ubuntu-latest
     env:
-      # Disable Subscription Manager container passthrough
-      SMDEV_CONTAINER_OFF: 1
-      # Subscription Manager credentials - uses repository secrets
-      # RHT_ORGID: "${{ secrets.RHT_ORGID }}"
-      # RHT_ACT_KEY: "${{ secrets.RHT_ACT_KEY }}"
-      
-      # Source registry for base image
-      SOURCE_REGISTRY_HOST: "registry.redhat.io"
-      # Source credentials - uses repository secrets
-      # SOURCE_REGISTRY_USER: "${{ secrets.SOURCE_REGISTRY_USER }}"
-      # SOURCE_REGISTRY_PASSWORD: "${{ secrets.SOURCE_REGISTRY_PASSWORD }}"
-
       # Source container image namespace and name (eg: myrepo/myimage)
       SOURCE_CONTAINER_REGISTRY: "ghcr.io"
       SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
@@ -56,27 +44,11 @@ jobs:
     name: Convert qcow2 disk to "container disk" and push to registry
     runs-on: ubuntu-latest
     env:
-      # Disable Subscription Manager container passthrough
-      SMDEV_CONTAINER_OFF: 1
-      # Subscription Manager credentials - uses repository secrets
-      # RHT_ORGID: "${{ secrets.RHT_ORGID }}"
-      # RHT_ACT_KEY: "${{ secrets.RHT_ACT_KEY }}"
       
-      # Source registry for base image
-      SOURCE_REGISTRY_HOST: "registry.redhat.io"
-      # Source credentials - uses repository secrets
-      # SOURCE_REGISTRY_USER: "${{ secrets.SOURCE_REGISTRY_USER }}"
-      # SOURCE_REGISTRY_PASSWORD: "${{ secrets.SOURCE_REGISTRY_PASSWORD }}"
-
-      # Source container image namespace and name (eg: myrepo/myimage)
-      SOURCE_CONTAINER_REGISTRY: "ghcr.io"
-      SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
-      SOURCE_CONTAINER_IMAGE_TAG: "main"
-
       # Containerfile to build
       CONTAINERFILE: "Containerfile.containerdisk"
 
-      # Destination image namespace and name (eg: myrepo/myimage)
+      # Destination container disk image namespace and name (eg: myrepo/myimage)
       DEST_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
 
       # List of tags to publish
@@ -85,8 +57,8 @@ jobs:
       # Destination registry for built images
       DEST_REGISTRY_HOST: "ghcr.io"
       # Destination credentials - uses platform variables and secrets
-      # DEST_REGISTRY_USER: "${{ github.actor }}"
-      # DEST_REGISTRY_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
+      DEST_REGISTRY_USER: "${{ github.actor }}"
+      DEST_REGISTRY_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
 
     container:
       image: registry.access.redhat.com/ubi9/ubi
@@ -131,8 +103,8 @@ jobs:
         uses: redhat-actions/podman-login@v1
         with:
           registry: ${{ env.DEST_REGISTRY_HOST }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ env.DEST_REGISTRY_USER }}
+          password: ${{ env.DEST_REGISTRY_PASSWORD }}
           auth_file_path: /run/containers/0/auth.json
 
       - name: Push to GitHub Container Repository
