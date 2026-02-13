@@ -5,6 +5,7 @@ FROM registry.redhat.io/rhel10/rhel-bootc:latest
 RUN <<EORUN
 set -xeuo pipefail
 
+dnf -y install tmux mkpasswd git vim
 dnf -y group install "Server with GUI"
 dnf clean all
 rm /var/{cache,lib}/dnf /var/lib/rhsm /var/cache/ldconfig -rf
