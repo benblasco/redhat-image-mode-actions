@@ -7,22 +7,11 @@ on:
     branches:
       - '**'
 jobs:
+
   rhel-bootc-qcow2-build:
     name: Build RHEL bootc qcow2 image with repo access
     runs-on: ubuntu-latest
     env:
-      # Disable Subscription Manager container passthrough
-      SMDEV_CONTAINER_OFF: 1
-      # Subscription Manager credentials - uses repository secrets
-      # RHT_ORGID: "${{ secrets.RHT_ORGID }}"
-      # RHT_ACT_KEY: "${{ secrets.RHT_ACT_KEY }}"
-      
-      # Source registry for base image
-      SOURCE_REGISTRY_HOST: "registry.redhat.io"
-      # Source credentials - uses repository secrets
-      # SOURCE_REGISTRY_USER: "${{ secrets.SOURCE_REGISTRY_USER }}"
-      # SOURCE_REGISTRY_PASSWORD: "${{ secrets.SOURCE_REGISTRY_PASSWORD }}"
-
       # Source container image namespace and name (eg: myrepo/myimage)
       SOURCE_CONTAINER_REGISTRY: "ghcr.io"
       SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
@@ -41,12 +30,101 @@ jobs:
           types: |
             qcow2
 
-      - name: Upload Artifact
+      - name: Upload QCOW2 disk image as artifact
         uses: actions/upload-artifact@v4
         with:
           name: rhel-images
-          path: ${{ steps.build-qcow2.outputs.output-directory }}
+          path: ${{ steps.build-qcow2.outputs.output-directory }}/qcow2/disk.qcow2
           if-no-files-found: error
           compression-level: 0
           overwrite: true
       
+  push-container-disk:
+    needs: rhel-bootc-qcow2-build
+    name: Convert qcow2 disk to "container disk" and push to registry
+    runs-on: ubuntu-latest
+    env:
+      
+      # Containerfile to build
+      CONTAINERFILE: "Containerfile.containerdisk"
+
+      # Destination container disk image namespace and name (eg: myrepo/myimage)
+      DEST_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
+
+      # List of tags to publish
+      TAGLIST: latestdiskimage ${{ github.sha }}
+
+      # Destination registry for built images
+      DEST_REGISTRY_HOST: "ghcr.io"
+      # Destination credentials - uses platform variables and secrets
+      DEST_REGISTRY_USER: "${{ github.actor }}"
+      DEST_REGISTRY_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
+
+    container:
+      image: registry.access.redhat.com/ubi9/ubi
+      options: --privileged
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - name: Download QCOW2 disk image as artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: rhel-images
+          path: output/
+      
+      - name: List the base directory contents
+        run: pwd && ls -R
+      
+      - name: Get container tools in UBI builder
+        run: dnf -y install podman buildah skopeo
+
+      # workaround for https://github.com/redhat-actions/podman-login/issues/42 since the docker config from the host doesn't come up to the container
+      - name: Workaround open podman-login action issue
+        env:
+          auth: "{ \"auths\": {} }"
+        run: |
+          mkdir -p $HOME/.docker
+          echo $auth > $HOME/.docker/config.json
+
+      - name: Use buildah bud to create the container disk image
+        id: build-container-disk-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.DEST_IMAGE }}
+          tags: ${{ env.TAGLIST }}
+          containerfiles: ${{ env.CONTAINERFILE }}
+      
+      - name: Log in to the GitHub Container registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ${{ env.DEST_REGISTRY_HOST }}
+          username: ${{ env.DEST_REGISTRY_USER }}
+          password: ${{ env.DEST_REGISTRY_PASSWORD }}
+          auth_file_path: /run/containers/0/auth.json
+
+      - name: Push to GitHub Container Repository
+        id: push-to-ghcr
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-container-disk-image.outputs.image }}
+          tags: ${{ steps.build-container-disk-image.outputs.tags }}
+          registry: ${{ env.DEST_REGISTRY_HOST }}
+       
+# % cat Containerfile.convert
+# FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS builder
+# ADD --chown=107:107 output/qcow2/disk.qcow2 /disk/
+# RUN chmod 0440 /disk/*
+# FROM scratch
+# COPY --from=builder /disk/* /disk/
+# 
+# podman build -f Containerfile.convert -t $REGISTRY_URL/$USERNAME/awesome-webserver:v1.0-ocpv .
+# podman push $REGISTRY_URL/$USERNAME/awesome-webserver:v1.0-ocpv
+#
+# Takes your qcow2, sticks it into an OCI container image (at /disk), and then pushes that container image into a container
+# image registry. OpenShift Virt recognises that format and can create a gold master boot disk simply from the OCI container
+# image file URL.
