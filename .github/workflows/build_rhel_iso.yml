@@ -1,0 +1,40 @@
+name: Build RHEL bootc ISO disk image with GHA
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+    #branches:
+      #- '**'
+jobs:
+
+  rhel-bootc-iso-build:
+    name: Build RHEL bootc ISO image with repo access
+    runs-on: ubuntu-latest
+    env:
+      # Source container image namespace and name (eg: myrepo/myimage)
+      SOURCE_CONTAINER_REGISTRY: "ghcr.io"
+      SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
+      SOURCE_CONTAINER_IMAGE_TAG: "main"
+
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - name: Build ISO disk image
+        id: build-iso
+        uses: osbuild/bootc-image-builder-action@v0.0.2
+        with:
+          config-file: ./config.toml
+          image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
+          types: |
+            iso
+
+      - name: Upload ISO disk image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rhel-images
+          path: ${{ steps.build-iso.outputs.output-directory }}/iso/disk.iso
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
