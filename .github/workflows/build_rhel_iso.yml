@@ -31,12 +31,12 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io \
             -u "${{ github.actor }}" --password-stdin
 
-      # Disk layout in config.toml is not passed here; image-builder-action does not
-      # yet expose --blueprint. Use README-buildhost.md for local builds with config.toml.
+      # bootc-image-builder-action always bind-mounts config-file (required). Same
+      # config.toml as README-buildhost.md; image-builder-action still lacks --blueprint.
       - name: Build ISO installer disk image
         uses: osbuild/bootc-image-builder-action@main
         with:
-          #config-file: ./iso-config.toml
+          config-file: ./config.toml
           image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
           types: |
             iso
