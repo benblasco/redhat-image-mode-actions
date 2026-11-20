@@ -11,6 +11,9 @@ jobs:
   rhel-bootc-qcow2-build:
     name: Build RHEL bootc qcow2 image with repo access
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     env:
       # Source container image namespace and name (eg: myrepo/myimage)
       SOURCE_CONTAINER_REGISTRY: "ghcr.io"
@@ -21,20 +24,35 @@ jobs:
       - name: Clone the repository
         uses: actions/checkout@v5
 
+      - name: Log in to ghcr.io for bootc source image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
       - name: Build QCOW2 disk image
-        id: build-qcow2
-        uses: osbuild/bootc-image-builder-action@v0.0.2
+        uses: osbuild/image-builder-action@main
         with:
-          config-file: ./config.toml
-          image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
-          types: |
-            qcow2
+          image_type: qcow2
+          bootc_ref: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
+          bootc_default_fs: xfs
+      # Disk layout in config.toml is not passed here; image-builder-action does not
+      # yet expose --blueprint. Use README-buildhost.md for local builds with config.toml.
+
+      - name: Stage QCOW2 for container disk build
+        run: |
+          qcow2="$(find output -type f -name 'disk.qcow2' | head -1)"
+          if [[ -z "$qcow2" ]]; then
+            echo "disk.qcow2 not found under output/"
+            find output -type f || true
+            exit 1
+          fi
+          cp -f "$qcow2" output/disk.qcow2
 
       - name: Upload QCOW2 disk image as artifact
         uses: actions/upload-artifact@v4
         with:
           name: rhel-images
-          path: ${{ steps.build-qcow2.outputs.output-directory }}/qcow2/disk.qcow2
+          path: output/disk.qcow2
           if-no-files-found: error
           compression-level: 0
           overwrite: true
