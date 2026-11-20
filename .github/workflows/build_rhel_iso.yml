@@ -36,9 +36,8 @@ jobs:
       - name: Build ISO installer disk image
         uses: osbuild/bootc-image-builder-action@main
         with:
-          config-file: ./iso-config.toml
+          #config-file: ./iso-config.toml
           image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
-          bootc_default_fs: xfs
           types: |
             iso
 
