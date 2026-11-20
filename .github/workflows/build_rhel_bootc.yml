@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get container tools in UBI builder
         run: dnf -y install podman buildah skopeo
@@ -82,7 +82,7 @@ jobs:
           echo $auth > $HOME/.docker/config.json
 
       - name: Log in to the RHT terms based registry
-        uses: redhat-actions/podman-login@v1
+        uses: redhat-actions/podman-login@v2
         with:
           registry: ${{ env.SOURCE_REGISTRY_HOST }}
           username: ${{ secrets.SOURCE_REGISTRY_USER }}
@@ -91,14 +91,14 @@ jobs:
 
       - name: Use buildah bud to create the image
         id: build-image
-        uses: redhat-actions/buildah-build@v2
+        uses: redhat-actions/buildah-build@v3
         with:
           image: ${{ env.DEST_IMAGE }}
           tags: ${{ env.TAGLIST }}
           containerfiles: ${{ env.CONTAINERFILE }}
 
       - name: Log in to the GitHub Container registry
-        uses: redhat-actions/podman-login@v1
+        uses: redhat-actions/podman-login@v2
         with:
           registry: ${{ env.DEST_REGISTRY_HOST }}
           username: ${{ github.actor }}
@@ -107,7 +107,7 @@ jobs:
 
       - name: Push to GitHub Container Repository
         id: push-to-ghcr
-        uses: redhat-actions/push-to-registry@v2
+        uses: redhat-actions/push-to-registry@v3
         with:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}

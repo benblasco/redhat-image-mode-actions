@@ -24,8 +24,8 @@ echo "Welcome to the bootc-http instance!" > /usr/share/www/html/index.html
 
 EORUN
 
-# Harden the image using the ACSC Essential 8 profile
-# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/using_image_mode_for_rhel_to_build_deploy_and_manage_operating_systems/security-hardening-and-compliance-of-bootable-images#building-hardened-bootable-images_security-hardening-and-compliance-of-bootable-images
+# Harden the image using the Australian Cyber Security Centre (ACSC) ISM Official - Base profile
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/secure-harden_and_secure_bootc_images_2
 RUN oscap-im --profile ism_o /usr/share/xml/scap/ssg/content/ssg-rhel10-ds.xml
 
 #clean up caches in the image and lint the container
