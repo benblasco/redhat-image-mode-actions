@@ -19,7 +19,7 @@ jobs:
       BIB_IMAGE: registry.redhat.io/rhel10/bootc-image-builder:latest
       SOURCE_CONTAINER_REGISTRY: ghcr.io
       SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{ github.event.repository.name }}"
-      SOURCE_CONTAINER_IMAGE_TAG: main
+      SOURCE_CONTAINER_IMAGE_TAG: "${{ github.ref_name }}"
       DEST_REGISTRY_HOST: ghcr.io
 
     container:

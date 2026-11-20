@@ -20,7 +20,7 @@ jobs:
       # Source container image namespace and name (eg: myrepo/myimage)
       SOURCE_CONTAINER_REGISTRY: "ghcr.io"
       SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
-      SOURCE_CONTAINER_IMAGE_TAG: "main"
+      SOURCE_CONTAINER_IMAGE_TAG: "${{ github.ref_name }}"
 
     steps:
       - name: Clone the repository
