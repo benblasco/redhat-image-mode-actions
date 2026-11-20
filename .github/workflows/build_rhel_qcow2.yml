@@ -52,7 +52,7 @@ jobs:
           cp -f "$qcow2" output/disk.qcow2
 
       - name: Upload QCOW2 disk image as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: rhel-images
           path: output/disk.qcow2
