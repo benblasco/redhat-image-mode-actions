@@ -1,0 +1,53 @@
+name: Build RHEL bootc ISO installer image with GHA
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+    branches:
+      - '**'
+jobs:
+
+  rhel-bootc-iso-build:
+    name: Build RHEL bootc ISO image with repo access
+    # ubuntu-latest can land on kernel 7.0 runners, which break osbuild
+    # container-deploy (mount permission denied). See osbuild/osbuild#2579.
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
+    env:
+      # Source container image namespace and name (eg: myrepo/myimage)
+      SOURCE_CONTAINER_REGISTRY: "ghcr.io"
+      SOURCE_CONTAINER_IMAGE: "${{ github.actor }}/${{github.event.repository.name}}"
+      SOURCE_CONTAINER_IMAGE_TAG: "main"
+
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v5
+
+      - name: Log in to ghcr.io for bootc source image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: Build ISO installer disk image
+        uses: osbuild/image-builder-action@main
+        with:
+          image_type: iso
+          bootc_ref: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
+          bootc_default_fs: xfs
+      # Disk layout in config.toml is not passed here; image-builder-action does not
+      # yet expose --blueprint. Use README-buildhost.md for local builds with config.toml.
+
+      - name: Upload ISO installer disk image as artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: rhel-images
+          path: output/iso/installer.iso
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+      
+          name: rhel-images
+          path: output/
