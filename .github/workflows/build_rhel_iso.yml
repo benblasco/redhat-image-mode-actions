@@ -34,7 +34,7 @@ jobs:
       # Disk layout in config.toml is not passed here; image-builder-action does not
       # yet expose --blueprint. Use README-buildhost.md for local builds with config.toml.
       - name: Build ISO installer disk image
-        uses: osbuild/bootc-image-builder-action@0.0.2
+        uses: osbuild/bootc-image-builder-action@main
         with:
           config-file: ./iso-config.toml
           image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
