@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - '*'
-    branches:
-      - '**'
+    # branches:
+    #   - '**'
 jobs:
 
   rhel-bootc-iso-build:
@@ -48,6 +48,3 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           overwrite: true
-      
-          name: rhel-images
-          path: output/
