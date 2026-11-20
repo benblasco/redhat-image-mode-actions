@@ -10,7 +10,9 @@ jobs:
 
   rhel-bootc-qcow2-build:
     name: Build RHEL bootc qcow2 image with repo access
-    runs-on: ubuntu-latest
+    # ubuntu-latest can land on kernel 7.0 runners, which break osbuild
+    # container-deploy (mount permission denied). See osbuild/osbuild#2579.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
