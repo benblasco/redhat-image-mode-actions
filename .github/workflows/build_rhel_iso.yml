@@ -91,6 +91,16 @@ jobs:
           # but steps run under GITHUB_WORKSPACE (/__w/...). Podman statfs bind sources
           # from inside the job container, so use GITHUB_WORKSPACE for volume mounts.
           mkdir -p "$GITHUB_WORKSPACE/output"
+          # UBI's entitlement-host is a symlink to /run/secrets/etc-pki-entitlement
+          # (empty until a host passthrough). Podman statfs fails on that bind source;
+          # mirror registered certs into a real directory for BIB.
+          if [[ -L /etc/pki/entitlement-host ]]; then
+            rm -f /etc/pki/entitlement-host
+          fi
+          mkdir -p /etc/pki/entitlement-host
+          if compgen -G '/etc/pki/entitlement/*' > /dev/null; then
+            cp -a /etc/pki/entitlement/. /etc/pki/entitlement-host/
+          fi
           podman pull --policy newer "${{ env.BIB_IMAGE }}"
           podman pull --policy newer "$BOOTC_IMAGE"
           podman run --rm --privileged \
@@ -99,9 +109,8 @@ jobs:
             -v /var/lib/containers/storage:/var/lib/containers/storage \
             -v "$GITHUB_WORKSPACE/output:/output" \
             -v "$GITHUB_WORKSPACE/config.toml:/config.toml:ro" \
-            -v /etc/pki/entitlement:/etc/pki/entitlement:ro \
-            -v /etc/pki/entitlement-host:/etc/pki/entitlement-host:ro \
-            -v /usr/share/rhel/secrets:/usr/share/rhel/secrets:ro \
+            -v /etc/pki:/etc/pki:ro \
+            -v /etc/rhsm:/etc/rhsm:ro \
             "${{ env.BIB_IMAGE }}" \
             build --output /output --type iso "$BOOTC_IMAGE"
           chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE/output"
