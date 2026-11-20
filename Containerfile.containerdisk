@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS builder
+FROM registry.access.redhat.com/ubi10/ubi-minimal:latest AS builder
 
 LABEL org.opencontainers.image.description="Container Disk image for qcow2 VM image to be used with OpenShift Virtualization"
 LABEL org.opencontainers.image.authors="Benjamin Blasco"

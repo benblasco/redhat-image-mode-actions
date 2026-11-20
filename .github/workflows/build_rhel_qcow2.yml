@@ -61,7 +61,7 @@ jobs:
       DEST_REGISTRY_PASSWORD: "${{ secrets.GITHUB_TOKEN }}"
 
     container:
-      image: registry.access.redhat.com/ubi9/ubi
+      image: registry.access.redhat.com/ubi10/ubi
       options: --privileged
     permissions:
       contents: write
