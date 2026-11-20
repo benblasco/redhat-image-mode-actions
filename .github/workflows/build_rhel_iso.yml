@@ -107,6 +107,9 @@ jobs:
             --pull=newer \
             --security-opt label=type:unconfined_t \
             -v /var/lib/containers/storage:/var/lib/containers/storage \
+            -v /run/containers/storage:/run/containers/storage \
+            -v /etc/containers/storage.conf:/etc/containers/storage.conf:ro \
+            -v /usr/bin/fuse-overlayfs:/usr/bin/fuse-overlayfs:ro \
             -v "$GITHUB_WORKSPACE/output:/output" \
             -v "$GITHUB_WORKSPACE/config.toml:/config.toml:ro" \
             -v /etc/pki:/etc/pki:ro \
