@@ -31,14 +31,16 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io \
             -u "${{ github.actor }}" --password-stdin
 
-      - name: Build ISO installer disk image
-        uses: osbuild/image-builder-action@main
-        with:
-          image_type: iso
-          bootc_ref: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
-          bootc_default_fs: xfs
       # Disk layout in config.toml is not passed here; image-builder-action does not
       # yet expose --blueprint. Use README-buildhost.md for local builds with config.toml.
+      - name: Build ISO installer disk image
+        uses: osbuild/image-builder-action@v0.0.2
+        with:
+          config-file: ./iso-config.toml
+          image: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
+          bootc_default_fs: xfs
+          types: |
+            iso
 
       - name: Upload ISO installer disk image as artifact
         uses: actions/upload-artifact@v6
