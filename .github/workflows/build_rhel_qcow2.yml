@@ -42,12 +42,13 @@ jobs:
 
       - name: Stage QCOW2 for container disk build
         run: |
-          qcow2="$(find output -type f -name 'disk.qcow2' | head -1)"
+          qcow2="$(find output -type f -name '*.qcow2' | head -1)"
           if [[ -z "$qcow2" ]]; then
-            echo "disk.qcow2 not found under output/"
+            echo "No .qcow2 image found under output/"
             find output -type f || true
             exit 1
           fi
+          echo "Using qcow2 artifact: $qcow2"
           cp -f "$qcow2" output/disk.qcow2
 
       - name: Upload QCOW2 disk image as artifact
