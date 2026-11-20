@@ -117,6 +117,15 @@ jobs:
             "${{ env.BIB_IMAGE }}" \
             build --output /output --type iso "$BOOTC_IMAGE"
           chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE/output"
+          iso="$(find "$GITHUB_WORKSPACE/output" -type f -name '*.iso' -print -quit)"
+          if [[ -z "$iso" ]]; then
+            echo "::error::No .iso found under output/"
+            find "$GITHUB_WORKSPACE/output" -type f || true
+            exit 1
+          fi
+          echo "Built ISO: $iso"
+          mkdir -p "$GITHUB_WORKSPACE/output/artifact"
+          cp -f "$iso" "$GITHUB_WORKSPACE/output/artifact/installer.iso"
 
       - name: Clean up the subscription
         if: always()
@@ -126,7 +135,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: rhel-images
-          path: output/iso/installer.iso
+          path: output/artifact/installer.iso
           if-no-files-found: error
           compression-level: 0
           overwrite: true
