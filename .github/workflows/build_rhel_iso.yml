@@ -87,21 +87,24 @@ jobs:
           BOOTC_IMAGE: "${{ env.SOURCE_CONTAINER_REGISTRY }}/${{ env.SOURCE_CONTAINER_IMAGE }}:${{ env.SOURCE_CONTAINER_IMAGE_TAG }}"
         run: |
           set -euo pipefail
-          mkdir -p output
+          # In job containers, github.workspace is the *host* path (/home/runner/work/...)
+          # but steps run under GITHUB_WORKSPACE (/__w/...). Podman statfs bind sources
+          # from inside the job container, so use GITHUB_WORKSPACE for volume mounts.
+          mkdir -p "$GITHUB_WORKSPACE/output"
           podman pull --policy newer "${{ env.BIB_IMAGE }}"
           podman pull --policy newer "$BOOTC_IMAGE"
           podman run --rm --privileged \
             --pull=newer \
             --security-opt label=type:unconfined_t \
             -v /var/lib/containers/storage:/var/lib/containers/storage \
-            -v "${{ github.workspace }}/output:/output" \
-            -v "${{ github.workspace }}/config.toml:/config.toml:ro" \
+            -v "$GITHUB_WORKSPACE/output:/output" \
+            -v "$GITHUB_WORKSPACE/config.toml:/config.toml:ro" \
             -v /etc/pki/entitlement:/etc/pki/entitlement:ro \
             -v /etc/pki/entitlement-host:/etc/pki/entitlement-host:ro \
             -v /usr/share/rhel/secrets:/usr/share/rhel/secrets:ro \
             "${{ env.BIB_IMAGE }}" \
             build --output /output --type iso "$BOOTC_IMAGE"
-          chown -R "$(id -u):$(id -g)" output
+          chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE/output"
 
       - name: Clean up the subscription
         if: always()
