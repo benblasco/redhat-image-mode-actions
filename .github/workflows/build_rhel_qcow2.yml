@@ -83,6 +83,25 @@ jobs:
       - name: Get container tools in UBI builder
         run: dnf -y install podman buildah skopeo
 
+      # This job uses `container:` so GitHub runs it inside Docker on ubuntu-latest.
+      # The job rootfs is already overlayfs; Podman's default overlay driver cannot nest
+      # without a FUSE mount helper. podman-login, buildah-build, and push-to-registry
+      # all need working container storage before registry login or image build.
+      - name: Configure Podman storage for nested GitHub Actions job container
+        run: |
+          dnf -y install fuse-overlayfs
+          mkdir -p /etc/containers
+          cat > /etc/containers/storage.conf <<'EOF'
+          [storage]
+          driver = "overlay"
+          graphroot = "/var/lib/containers/storage"
+          runroot = "/run/containers/storage"
+
+          [storage.options.overlay]
+          mount_program = "/usr/bin/fuse-overlayfs"
+          EOF
+          podman info -f '{{.Store.GraphDriverName}}'
+
       # workaround for https://github.com/redhat-actions/podman-login/issues/42 since the docker config from the host doesn't come up to the container
       - name: Workaround open podman-login action issue
         env:
